@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard | KILLERS VIP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+
+<body class="dashboard-body">
+    <div class="dash-container">
+        <!-- Announcements Bar -->
+        <div id="announcement-bar" class="ann-bar hidden">
+            <i class="fas fa-bullhorn"></i>
+            <span id="ann-text">Loading latest news...</span>
+        </div>
+
+        <header class="dash-header">
+            <div class="user-info">
+                <img id="user-avatar" src="" alt="Avatar" class="avatar">
+                <div>
+                    <h2 id="user-name">Loading...</h2>
+                    <div class="user-meta">
+                        <span id="user-email"></span>
+                        <div class="user-id-badge" onclick="copyId()">
+                            <i class="fas fa-fingerprint"></i> ID: <span id="display-id">-------</span>
+                            <i class="fas fa-copy copy-icon"></i>
+                            <span class="tooltip">Click to Copy</span>
+                        </div>
+                        <div class="user-points">
+                            <i class="fas fa-star"></i> Points: <span id="ref-points">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="signOut()" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </header>
+
+        <main class="dash-content">
+            <!-- Status Progress Bar -->
+            <section class="status-section">
+                <h3>Subscription Status</h3>
+                <div class="progress-container">
+                    <div class="step" id="step-registered">
+                        <div class="circle">1</div>
+                        <span>Registered</span>
+                    </div>
+                    <div class="line"></div>
+                    <div class="step" id="step-pending">
+                        <div class="circle">2</div>
+                        <span>Payment Pending</span>
+                    </div>
+                    <div class="line"></div>
+                    <div class="step" id="step-active">
+                        <div class="circle">3</div>
+                        <span>Active</span>
+                    </div>
+                </div>
+                <div id="status-badge" class="badge">Checking...</div>
+            </section>
+
+            <!-- Package Selection -->
+            <section id="package-section" class="package-section hidden">
+                <h3>Select Your VIP Package</h3>
+                <div class="pkg-grid">
+                    <div class="pkg-card" onclick="selectPkg('Crypto VIP', 30)">
+                        <i class="fab fa-bitcoin"></i>
+                        <h4>Crypto VIP</h4>
+                        <div class="price">30 USDT</div>
+                        <ul>
+                            <li>Daily Signals</li>
+                            <li>95% Accuracy</li>
+                            <li>Lifetime Access</li>
+                        </ul>
+                        <button class="btn-select">Select</button>
+                    </div>
+                    <div class="pkg-card" onclick="selectPkg('Forex VIP', 40)">
+                        <i class="fas fa-chart-line"></i>
+                        <h4>Forex VIP</h4>
+                        <div class="price">40 USDT</div>
+                        <ul>
+                            <li>Gold & Forex</li>
+                            <li>98% Accuracy</li>
+                            <li>Lifetime Access</li>
+                        </ul>
+                        <button class="btn-select">Select</button>
+                    </div>
+                    <div class="pkg-card highlighted" onclick="selectPkg('All-in-One VIP', 60)">
+                        <i class="fas fa-crown"></i>
+                        <h4>All-in-One</h4>
+                        <div class="price">60 USDT</div>
+                        <ul>
+                            <li>Crypto + Forex</li>
+                            <li>Priority Support</li>
+                            <li>Lifetime Access</li>
+                        </ul>
+                        <button class="btn-select">Best Value</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Payment Details Routing -->
+            <section id="payment-section" class="payment-section hidden">
+                <button class="back-link" onclick="hidePayment()"><i class="fas fa-arrow-left"></i> Change
+                    Package</button>
+                <h3>Complete Your Payment</h3>
+                <p>Transfer the amount to the details below based on your assigned manager.</p>
+                <div class="payment-card">
+                    <div class="manager-info">
+                        <i class="fas fa-user-tie"></i>
+                        <div>
+                            <strong id="manager-name">Loading...</strong>
+                            <span>Your Assigned Manager</span>
+                        </div>
+                    </div>
+                    <div class="bank-details" id="bank-details-box">
+                        <!-- Bank details injected here -->
+                    </div>
+                    <div class="instruction">
+                        <p><i class="fas fa-info-circle"></i> After payment, click the button below to send your receipt
+                            via WhatsApp for activation.</p>
+                    </div>
+                    <button id="paid-btn" class="btn-paid">
+                        <i class="fab fa-whatsapp"></i> I Have Paid (Send Receipt)
+                    </button>
+                </div>
+            </section>
+
+            <!-- Referral System -->
+            <section class="referral-section">
+                <div class="ref-card">
+                    <div class="ref-icon"><i class="fas fa-user-plus"></i></div>
+                    <div class="ref-info">
+                        <h3>Referral Program</h3>
+                        <p>Invite your friends and earn <strong>10 Points</strong> per registration!</p>
+                        <div class="ref-link-box">
+                            <input type="text" id="referral-url" readonly>
+                            <button onclick="copyRefLink()"><i class="fas fa-copy"></i> Copy Link</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Active View -->
+            <section id="active-section" class="active-section hidden">
+                <div class="welcome-card">
+                    <i class="fas fa-check-circle success-icon"></i>
+                    <h3>Welcome to the VIP Club!</h3>
+                    <p>Your subscription is active until: <strong id="expiry-txt">Lifetime</strong></p>
+                    <div class="access-btns">
+                        <a href="#" class="btn-access"><i class="fab fa-telegram"></i> Join Crypto Telegram</a>
+                        <a href="#" class="btn-access"><i class="fab fa-telegram"></i> Join Forex Telegram</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="dash-footer">
+            <p>&copy; 2026 BINANCE KILLER TRADING COMPANY</p>
+            <div class="dash-legal">
+                <a href="privacy-policy.html">Privacy Policy</a>
+                <a href="terms-conditions.html">Terms & Conditions</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/security.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+
+</html>

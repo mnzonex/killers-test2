@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register | KILLERS VIP</title>
+  <meta name="description" content="Create your KILLERS VIP account to access premium trading signals.">
+  <link rel="icon" href="images/apple.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/register.css">
+</head>
+
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="login-page">
+    <div class="login-card">
+      <a href="index.html" class="card-logo">
+        <img src="assets/logo.jpg" alt="Killers VIP" onerror="this.style.display='none'">
+        <span>KILLERS <em>VIP</em></span>
+      </a>
+
+      <div class="card-head">
+        <h1>Join the VIP</h1>
+        <p>Register using Google and enter your promo code</p>
+      </div>
+
+      <form class="login-form" id="registerForm" onsubmit="return false;">
+        <!-- Promo Code Section -->
+        <div class="field">
+          <label for="promo-code"><i class="fas fa-ticket-alt"></i> Promo Code (Required)</label>
+          <div class="promo-row">
+            <input type="text" id="promo-code" placeholder="Enter code (e.g. AMILA10)" required autocomplete="off">
+            <button type="button" class="btn-check" id="checkCodeBtn"><i class="fas fa-check"></i> Check</button>
+          </div>
+          <span id="promo-msg" class="promo-msg">Code not checked</span>
+        </div>
+
+        <button type="button" class="btn-default-code" id="useDefaultCodeBtn">
+          <i class="fas fa-star"></i> Use Default Code (KILLERS10)
+        </button>
+
+        <!-- Google Login Button -->
+        <button type="button" class="btn-login google-btn" id="googleSignupBtn" disabled>
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Icon" width="18">
+          Sign Up with Google
+        </button>
+      </form>
+
+      <div class="card-foot">
+        <p>Already have an account? <a href="login.html">Login here</a></p>
+        <div class="legal-links-small">
+          <a href="privacy-policy.html">Privacy Policy</a> &bull; <a href="terms-conditions.html">Terms & Conditions</a>
+        </div>
+        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Include Supabase Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script src="js/security.js"></script>
+  <script>
+    const promoInp = document.getElementById('promo-code');
+    const checkBtn = document.getElementById('checkCodeBtn');
+    const msgSpan = document.getElementById('promo-msg');
+    const dftBtn = document.getElementById('useDefaultCodeBtn');
+    const googleBtn = document.getElementById('googleSignupBtn');
+
+    let isValid = false;
+
+    // 1. Auto-apply URL Code & Ref
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeFromUrl = urlParams.get('code');
+    const refFromUrl = urlParams.get('ref');
+
+    if (refFromUrl) {
+      localStorage.setItem('referral_id', refFromUrl);
+    }
+
+    if (codeFromUrl) {
+      promoInp.value = codeFromUrl;
+      validateCode(codeFromUrl);
+    }
+
+    // 2. Validate Code
+    async function validateCode(code) {
+      if (!code) return;
+      msgSpan.className = 'promo-msg loading';
+      msgSpan.textContent = 'Checking code...';
+
+      const { data, error } = await window.supabaseClient
+        .from('promo_codes')
+        .select('code')
+        .eq('code', code.toUpperCase())
+        .single();
+
+      if (data) {
+        isValid = true;
+        msgSpan.className = 'promo-msg success';
+        msgSpan.textContent = '✓ Promo code is valid!';
+        googleBtn.disabled = false;
+        promoInp.value = code.toUpperCase();
+      } else {
+        isValid = false;
+        msgSpan.className = 'promo-msg error';
+        msgSpan.textContent = '✗ Invalid promo code';
+        googleBtn.disabled = true;
+      }
+    }
+
+    checkBtn.addEventListener('click', () => validateCode(promoInp.value));
+
+    // 3. Use Default Code
+    dftBtn.addEventListener('click', () => {
+      promoInp.value = 'KILLERS10';
+      validateCode('KILLERS10');
+    });
+
+    // 4. Google Signup Click
+    googleBtn.addEventListener('click', async () => {
+      if (!isValid) return alert('Please enter a valid promo code first!');
+      // Save promo code in local storage as a backup for session-based referral
+      localStorage.setItem('referral_promo', promoInp.value);
+      await signInWithGoogle(promoInp.value);
+    });
+
+    // Handle Input Event to reset validation status
+    promoInp.addEventListener('input', () => {
+      isValid = false;
+      googleBtn.disabled = true;
+      msgSpan.className = 'promo-msg';
+      msgSpan.textContent = 'Click Check to verify code';
+    });
+  </script>
+</body>
+
+</html>

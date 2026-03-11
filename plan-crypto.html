@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto VIP Plan | KILLERS VIP — 30 USDT Lifetime</title>
+  <meta name="description"
+    content="Crypto VIP Plan — Daily BTC & ETH signals with 95-98% accuracy. 30 USDT lifetime access. Buy Now.">
+  <link rel="icon" href="images/apple.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/plan-crypto.css">
+</head>
+
+<body>
+
+  <header id="site-header">
+    <div class="hdr-inner">
+      <a href="index.html" class="logo-wrap">
+        <img src="assets/logo.jpg" class="logo-img" alt="Killers VIP" onerror="this.style.display='none'">
+        <span class="brand-txt">KILLERS <em>VIP</em></span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+        <a href="plans.html" class="nav-link is-active"><i class="fas fa-crown"></i> Plans</a>
+        <a href="login.html" class="nav-link"><i class="fas fa-sign-in-alt"></i> Login</a>
+        <a href="support-contact.html" class="nav-link"><i class="fas fa-headset"></i> Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="page-hero">
+    <div class="ph-inner">
+      <span class="sec-pill"><i class="fab fa-bitcoin"></i> Crypto Signals</span>
+      <h1>Crypto <em>VIP</em> Details</h1>
+      <p>Daily BTC &amp; ETH signals with 95–98% accuracy — lifetime access</p>
+    </div>
+  </section>
+
+  <section class="detail-section">
+    <div class="section-wrap">
+      <div class="detail-layout">
+
+        <!-- Features -->
+        <div class="detail-card">
+          <h2 class="detail-title"><i class="fab fa-bitcoin"></i> What's Included</h2>
+          <div class="detail-grid">
+            <div class="detail-row"><i class="fas fa-crown"></i> Daily 3 – 8 Signals</div>
+            <div class="detail-row"><i class="fas fa-bullseye"></i> Accuracy 95% – 98%</div>
+            <div class="detail-row"><i class="fab fa-bitcoin"></i> BTC &amp; ETH High Accurate Signals</div>
+            <div class="detail-row"><i class="fas fa-coins"></i> Daily BTC Market Update</div>
+            <div class="detail-row"><i class="fas fa-chart-bar"></i> Daily Market Analysis</div>
+            <div class="detail-row"><i class="fas fa-bell"></i> Profit Target Alerts</div>
+          </div>
+          <div class="vip-note">
+            <i class="fas fa-info-circle"></i>
+            Purchase our Crypto VIP membership to access high-profit signals &amp; exclusive benefits 🤑
+          </div>
+        </div>
+
+        <!-- Pricing -->
+        <div class="price-box">
+          <span class="price-badge">NEW VIP</span>
+          <div class="price-icon"><i class="fab fa-bitcoin"></i></div>
+          <h2>LIFETIME PLAN</h2>
+          <div class="price-amount">
+            <span class="price-num">30</span>
+            <span class="price-cur">USDT</span>
+          </div>
+          <p class="price-sub">One-time payment • Never expires</p>
+          <ul class="price-perks">
+            <li><i class="fas fa-check"></i> Instant access after payment</li>
+            <li><i class="fas fa-check"></i> 24/7 WhatsApp support</li>
+            <li><i class="fas fa-check"></i> No hidden fees</li>
+          </ul>
+          <a href="contact.html" class="btn btn-buy">
+            <i class="fas fa-shopping-cart"></i> BUY NOW
+          </a>
+          <a href="plans.html" class="btn-back"><i class="fas fa-arrow-left"></i> All Plans</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-wrap section-wrap">
+      <div class="ft-brand">
+        <span class="brand-txt">KILLERS <em>VIP</em></span>
+        <p>Sri Lanka's #1 Crypto &amp; Forex trading signals platform.</p>
+      </div>
+      <div class="ft-col">
+        <h4>Quick Links</h4>
+        <a href="index.html">Home</a>
+        <a href="plans.html">VIP Plans</a>
+        <a href="support-contact.html">Contact</a>
+      </div>
+    </div>
+    <div class="ft-bar section-wrap">
+      <p>&copy; 2025 <strong>KILLERS VIP</strong> — All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script src="js/killers.js"></script>
+  <script>
+    async function checkAccess() {
+      const session = await checkSession();
+      if (!session) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const { user } = session;
+      const { data: userData } = await window.supabaseClient
+        .from('users').select('promo_code_used').eq('id', user.id).single();
+
+      let promoCode = userData?.promo_code_used || 'KILLERS10';
+      const { data: promoData } = await window.supabaseClient
+        .from('promo_codes').select('*').eq('code', promoCode).single();
+
+      if (promoData) {
+        const priceEl = document.querySelector('.price-num');
+        if (priceEl) priceEl.textContent = promoData.crypto_price;
+      }
+    }
+    document.addEventListener('DOMContentLoaded', checkAccess);
+  </script>
+</body>
+
+</html>
