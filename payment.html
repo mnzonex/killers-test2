@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Payment | KILLERS VIP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/payment.css">
+</head>
+<body class="payment-body">
+    <div class="payment-container">
+        <header class="payment-header">
+            <a href="plans.html" class="back-link"><i class="fas fa-arrow-left"></i> All Plans</a>
+            <div class="logo">
+                <img src="assets/logo.jpg" alt="Logo">
+                <span>KILLERS <em>VIP</em></span>
+            </div>
+        </header>
+
+        <main class="payment-main">
+            <div class="payment-card">
+                <div class="card-head">
+                    <span class="badge">SECURE PAYMENT</span>
+                    <h1 id="selected-pkg-name">Loading Plan...</h1>
+                    <div class="price-row">
+                        <span class="price" id="pkg-price">--</span>
+                        <span class="cur">USDT</span>
+                    </div>
+                </div>
+
+                <div class="payment-details">
+                    <h3><i class="fas fa-university"></i> Bank Transfer Details</h3>
+                    <div class="bank-info-box">
+                        <div class="info-item">
+                            <span class="label">Bank Name</span>
+                            <div class="value-row">
+                                <span id="bank-name">Loading...</span>
+                                <i class="fas fa-copy" onclick="copyText('bank-name')"></i>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Account Number</span>
+                            <div class="value-row">
+                                <span id="bank-acc">Loading...</span>
+                                <i class="fas fa-copy" onclick="copyText('bank-acc')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="binance-title"><i class="fab fa-bitcoin"></i> Binance Pay ID</h3>
+                    <div class="binance-box">
+                        <span id="binance-id">Loading...</span>
+                        <button class="btn-copy-alt" onclick="copyText('binance-id')">Copy ID</button>
+                    </div>
+
+                    <div class="other-details" id="other-bank-details" style="display:none;">
+                        <h4>Extra Instructions:</h4>
+                        <p id="other-details-text"></p>
+                    </div>
+                </div>
+
+                <div class="payment-footer">
+                    <div class="instruction-box">
+                        <i class="fas fa-info-circle"></i>
+                        <p>After payment, upload your receipt and send it to our verification team via WhatsApp.</p>
+                    </div>
+                    <button id="wa-receipt-btn" class="btn-whatsapp">
+                        <i class="fab fa-whatsapp"></i> I Have Paid (Send Receipt)
+                    </button>
+                </div>
+            </div>
+
+            <div class="payment-sidebar">
+                <div class="support-card">
+                    <i class="fas fa-headset support-icon"></i>
+                    <h3>Need Help?</h3>
+                    <p>If you have any issues with payment, contact our 24/7 support team.</p>
+                    <a href="https://wa.me/94729190799" class="btn-support" target="_blank">Contact Support</a>
+                </div>
+                
+                <div class="locked-links-card">
+                    <h3><i class="fas fa-lock"></i> VIP Access Links</h3>
+                    <p>These links will unlock automatically after your payment is verified.</p>
+                    <div class="locked-btns">
+                        <button class="btn-locked" disabled><i class="fab fa-telegram"></i> Join Crypto VIP</button>
+                        <button class="btn-locked" disabled><i class="fab fa-telegram"></i> Join Forex VIP</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentUser = null;
+        let currentPromo = null;
+        let pkgType = '';
+
+        async function initPayment() {
+            const urlParams = new URLSearchParams(window.location.search);
+            pkgType = urlParams.get('pkg') || 'Crypto VIP';
+            
+            const session = await checkSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const { data: user } = await window.supabaseClient.from('users').select('*').eq('id', session.user.id).single();
+            currentUser = user;
+
+            const promoCode = user.promo_code_used || 'KILLERS10';
+            const { data: promo } = await window.supabaseClient.from('promo_codes').select('*').eq('code', promoCode).single();
+            currentPromo = promo;
+
+            renderPayment();
+        }
+
+        function renderPayment() {
+            document.getElementById('selected-pkg-name').textContent = pkgType;
+            
+            if (pkgType.includes('Crypto')) document.getElementById('pkg-price').textContent = currentPromo.crypto_price;
+            else if (pkgType.includes('Forex')) document.getElementById('pkg-price').textContent = currentPromo.forex_price;
+            else document.getElementById('pkg-price').textContent = currentPromo.all_price;
+
+            // Parse bank details
+            const raw = currentPromo.bank_details;
+            if (raw.includes(' | ')) {
+                const parts = raw.split(' | ');
+                document.getElementById('bank-name').textContent = parts[0]?.replace('Bank: ', '') || 'N/A';
+                document.getElementById('bank-acc').textContent = parts[1]?.replace('Acc: ', '') || 'N/A';
+                document.getElementById('binance-id').textContent = parts[2]?.replace('Binance: ', '') || 'N/A';
+                const other = parts[3]?.replace('Other: ', '');
+                if (other && other !== 'N/A' && other.trim() !== '') {
+                    document.getElementById('other-bank-details').style.display = 'block';
+                    document.getElementById('other-details-text').textContent = other;
+                }
+            } else {
+                document.getElementById('bank-name').textContent = 'Check Whatsapp';
+                document.getElementById('bank-acc').textContent = 'Check Whatsapp';
+                document.getElementById('binance-id').textContent = 'N/A';
+                document.getElementById('other-bank-details').style.display = 'block';
+                document.getElementById('other-details-text').textContent = raw;
+            }
+
+            document.getElementById('wa-receipt-btn').onclick = async () => {
+                // Update user status in DB
+                await window.supabaseClient.from('users').update({
+                    status: 'Pending',
+                    active_package: pkgType
+                }).eq('id', currentUser.id);
+
+                const msg = `Hi, I just paid for ${pkgType}. My ID: ${currentUser.display_id}. Please activate my account.`;
+                const wa = currentPromo.whatsapp_number.replace(/\D/g, '');
+                window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
+                window.location.href = 'dashboard.html';
+            };
+        }
+
+        function copyText(id) {
+            const txt = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(txt).then(() => {
+                alert('Copied: ' + txt);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initPayment);
+    </script>
+</body>
+</html>

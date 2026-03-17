@@ -19,11 +19,23 @@
             <span id="ann-text">Loading latest news...</span>
         </div>
 
+        <nav class="top-nav">
+            <a href="index.html"><i class="fas fa-home"></i> Home</a>
+            <a href="plans.html"><i class="fas fa-gem"></i> Plans</a>
+            <a href="support-contact.html"><i class="fas fa-headset"></i> Support</a>
+        </nav>
+
         <header class="dash-header">
             <div class="user-info">
-                <img id="user-avatar" src="" alt="Avatar" class="avatar">
+                <div class="avatar-container" onclick="openProfileModal()">
+                    <img id="user-avatar" src="" alt="Avatar" class="avatar">
+                    <div class="edit-overlay"><i class="fas fa-camera"></i></div>
+                </div>
                 <div>
-                    <h2 id="user-name">Loading...</h2>
+                    <div class="name-row">
+                        <h2 id="user-name">Loading...</h2>
+                        <button class="btn-edit-name" onclick="openProfileModal()"><i class="fas fa-edit"></i></button>
+                    </div>
                     <div class="user-meta">
                         <span id="user-email"></span>
                         <div class="user-id-badge" onclick="copyId()">
@@ -41,26 +53,25 @@
         </header>
 
         <main class="dash-content">
-            <!-- Status Progress Bar -->
+            <!-- Status Card -->
             <section class="status-section">
-                <h3>Subscription Status</h3>
-                <div class="progress-container">
-                    <div class="step" id="step-registered">
-                        <div class="circle">1</div>
-                        <span>Registered</span>
+                <div class="status-card" id="main-status-card">
+                    <div class="status-header">
+                        <h3>Subscription Status</h3>
+                        <div id="status-badge" class="badge">Checking...</div>
                     </div>
-                    <div class="line"></div>
-                    <div class="step" id="step-pending">
-                        <div class="circle">2</div>
-                        <span>Payment Pending</span>
+                    <div class="status-details">
+                        <div class="status-item">
+                            <span class="label">Current Plan:</span>
+                            <span id="active-plan-name" class="value">None</span>
+                        </div>
+                        <div class="status-item" id="expiry-item">
+                            <span class="label">Expiry Date:</span>
+                            <span id="expiry-txt" class="value">N/A</span>
+                        </div>
                     </div>
-                    <div class="line"></div>
-                    <div class="step" id="step-active">
-                        <div class="circle">3</div>
-                        <span>Active</span>
-                    </div>
+                    <div id="status-action-box"></div>
                 </div>
-                <div id="status-badge" class="badge">Checking...</div>
             </section>
 
             <!-- Package Selection -->
@@ -103,32 +114,6 @@
                 </div>
             </section>
 
-            <!-- Payment Details Routing -->
-            <section id="payment-section" class="payment-section hidden">
-                <button class="back-link" onclick="hidePayment()"><i class="fas fa-arrow-left"></i> Change
-                    Package</button>
-                <h3>Complete Your Payment</h3>
-                <p>Transfer the amount to the details below based on your assigned manager.</p>
-                <div class="payment-card">
-                    <div class="manager-info">
-                        <i class="fas fa-user-tie"></i>
-                        <div>
-                            <strong id="manager-name">Loading...</strong>
-                            <span>Your Assigned Manager</span>
-                        </div>
-                    </div>
-                    <div class="bank-details" id="bank-details-box">
-                        <!-- Bank details injected here -->
-                    </div>
-                    <div class="instruction">
-                        <p><i class="fas fa-info-circle"></i> After payment, click the button below to send your receipt
-                            via WhatsApp for activation.</p>
-                    </div>
-                    <button id="paid-btn" class="btn-paid">
-                        <i class="fab fa-whatsapp"></i> I Have Paid (Send Receipt)
-                    </button>
-                </div>
-            </section>
 
             <!-- Referral System -->
             <section class="referral-section">
@@ -159,13 +144,19 @@
             </section>
         </main>
 
-        <footer class="dash-footer">
-            <p>&copy; 2026 BINANCE KILLER TRADING COMPANY</p>
-            <div class="dash-legal">
-                <a href="privacy-policy.html">Privacy Policy</a>
-                <a href="terms-conditions.html">Terms & Conditions</a>
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <h3>Update Profile</h3>
+            <div class="field">
+                <label>Display Name</label>
+                <input type="text" id="edit-name-input" placeholder="Enter your name">
             </div>
-        </footer>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeProfileModal()">Cancel</button>
+                <button class="btn-activate" onclick="updateProfileName()">Save Changes</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
