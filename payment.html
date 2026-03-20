@@ -31,21 +31,8 @@
 
                 <div class="payment-details">
                     <h3><i class="fas fa-university"></i> Bank Transfer Details</h3>
-                    <div class="bank-info-box">
-                        <div class="info-item">
-                            <span class="label">Bank Name</span>
-                            <div class="value-row">
-                                <span id="bank-name">Loading...</span>
-                                <i class="fas fa-copy" onclick="copyText('bank-name')"></i>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Account Number</span>
-                            <div class="value-row">
-                                <span id="bank-acc">Loading...</span>
-                                <i class="fas fa-copy" onclick="copyText('bank-acc')"></i>
-                            </div>
-                        </div>
+                    <div id="dynamic-banks-render">
+                        <!-- Rendered by JS -->
                     </div>
 
                     <h3 class="binance-title"><i class="fab fa-bitcoin"></i> Binance Pay ID</h3>
@@ -94,6 +81,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/security.js"></script>
+    <script src="js/killers.js"></script>
     <script>
         let currentUser = null;
         let currentPromo = null;
@@ -116,34 +105,101 @@
             const { data: promo } = await window.supabaseClient.from('promo_codes').select('*').eq('code', promoCode).single();
             currentPromo = promo;
 
+            if (!currentPromo) {
+                const { data: defaultPromo } = await window.supabaseClient.from('promo_codes').select('*').eq('code', 'KILLERS10').single();
+                currentPromo = defaultPromo;
+            }
+
             renderPayment();
         }
 
         function renderPayment() {
+            if (!currentPromo) return;
             document.getElementById('selected-pkg-name').textContent = pkgType;
             
             if (pkgType.includes('Crypto')) document.getElementById('pkg-price').textContent = currentPromo.crypto_price;
             else if (pkgType.includes('Forex')) document.getElementById('pkg-price').textContent = currentPromo.forex_price;
             else document.getElementById('pkg-price').textContent = currentPromo.all_price;
 
-            // Parse bank details
+            // Parse bank details JSON
             const raw = currentPromo.bank_details;
-            if (raw.includes(' | ')) {
-                const parts = raw.split(' | ');
-                document.getElementById('bank-name').textContent = parts[0]?.replace('Bank: ', '') || 'N/A';
-                document.getElementById('bank-acc').textContent = parts[1]?.replace('Acc: ', '') || 'N/A';
-                document.getElementById('binance-id').textContent = parts[2]?.replace('Binance: ', '') || 'N/A';
-                const other = parts[3]?.replace('Other: ', '');
-                if (other && other !== 'N/A' && other.trim() !== '') {
-                    document.getElementById('other-bank-details').style.display = 'block';
-                    document.getElementById('other-details-text').textContent = other;
+            let parsedBanks = [];
+            let binanceIdStr = 'N/A';
+            let otherStr = '';
+
+            try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                    parsedBanks = parsed;
+                } else if (parsed && typeof parsed === 'object') {
+                    parsedBanks = parsed.banks || [];
+                    binanceIdStr = parsed.binance || 'N/A';
+                    otherStr = parsed.other || '';
                 }
+            } catch(e) {
+                if (raw.includes(' | ')) {
+                    const parts = raw.split(' | ');
+                    parsedBanks = [{
+                        bank: parts[0]?.replace('Bank: ', ''),
+                        accNo: parts[1]?.replace('Acc: ', '')
+                    }];
+                    binanceIdStr = parts[2]?.replace('Binance: ', '') || 'N/A';
+                    otherStr = parts[3]?.replace('Other: ', '') || '';
+                } else {
+                    otherStr = raw;
+                }
+            }
+
+            // Render Banks
+            const banksContainer = document.getElementById('dynamic-banks-render');
+            banksContainer.innerHTML = '';
+            if (parsedBanks.length > 0) {
+                parsedBanks.forEach((b, i) => {
+                    const html = `
+                        <div class="bank-info-box" style="margin-bottom: 1rem; position: relative;">
+                            ${parsedBanks.length > 1 ? `<span style="position:absolute; top: -10px; left: 15px; background: var(--bg-dark); padding: 0 5px; font-size: 0.8rem; color: var(--primary);">Option ${i+1}</span>` : ''}
+                            <div class="info-item">
+                                <span class="label">Bank Name</span>
+                                <div class="value-row">
+                                    <span id="bank-name-${i}">${b.bank || 'N/A'}</span>
+                                    <i class="fas fa-copy" onclick="copyText('bank-name-${i}')"></i>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Branch</span>
+                                <div class="value-row">
+                                    <span id="bank-branch-${i}">${b.branch || '-'}</span>
+                                    <i class="fas fa-copy" onclick="copyText('bank-branch-${i}')"></i>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Account Name</span>
+                                <div class="value-row">
+                                    <span id="bank-accname-${i}">${b.accName || '-'}</span>
+                                    <i class="fas fa-copy" onclick="copyText('bank-accname-${i}')"></i>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Account Number</span>
+                                <div class="value-row">
+                                    <span id="bank-acc-${i}">${b.accNo || 'N/A'}</span>
+                                    <i class="fas fa-copy" onclick="copyText('bank-acc-${i}')"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    banksContainer.insertAdjacentHTML('beforeend', html);
+                });
             } else {
-                document.getElementById('bank-name').textContent = 'Check Whatsapp';
-                document.getElementById('bank-acc').textContent = 'Check Whatsapp';
-                document.getElementById('binance-id').textContent = 'N/A';
+                banksContainer.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding: 1rem 0;">No Bank details provided</p>';
+            }
+
+            document.getElementById('binance-id').textContent = binanceIdStr;
+            if (otherStr && otherStr !== 'N/A' && otherStr.trim() !== '') {
                 document.getElementById('other-bank-details').style.display = 'block';
-                document.getElementById('other-details-text').textContent = raw;
+                document.getElementById('other-details-text').textContent = otherStr;
+            } else {
+                document.getElementById('other-bank-details').style.display = 'none';
             }
 
             document.getElementById('wa-receipt-btn').onclick = async () => {
@@ -161,9 +217,11 @@
         }
 
         function copyText(id) {
-            const txt = document.getElementById(id).textContent;
+            const el = document.getElementById(id);
+            if (!el) return;
+            const txt = el.textContent;
             navigator.clipboard.writeText(txt).then(() => {
-                alert('Copied: ' + txt);
+                window.showToast('Copied to clipboard!', 'success');
             });
         }
 

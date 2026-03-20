@@ -116,18 +116,26 @@
   <script src="js/auth.js"></script>
   <script src="js/killers.js"></script>
   <script>
-    async function checkAccess() {
-      const session = await checkSession();
-      if (!session) {
-        window.location.href = 'login.html';
-        return;
+    async function loadDynamicPrices() {
+      let promoCode = localStorage.getItem('referral_promo') || 'KILLERS10';
+      
+      try {
+        const session = await checkSession();
+        if (session) {
+          const { data: userData } = await window.supabaseClient
+            .from('users')
+            .select('promo_code_used')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (userData && userData.promo_code_used) {
+              promoCode = userData.promo_code_used;
+          }
+        }
+      } catch (e) {
+          console.error("Session check error", e);
       }
 
-      const { user } = session;
-      const { data: userData } = await window.supabaseClient
-        .from('users').select('promo_code_used').eq('id', user.id).single();
-
-      let promoCode = userData?.promo_code_used || 'KILLERS10';
       const { data: promoData } = await window.supabaseClient
         .from('promo_codes').select('*').eq('code', promoCode).single();
 
@@ -136,7 +144,7 @@
         if (priceEl) priceEl.textContent = promoData.all_price;
       }
     }
-    document.addEventListener('DOMContentLoaded', checkAccess);
+    document.addEventListener('DOMContentLoaded', loadDynamicPrices);
   </script>
 </body>
 

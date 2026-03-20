@@ -51,6 +51,11 @@
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Icon" width="18">
           Sign Up with Google
         </button>
+
+        <!-- Complete Registration Button (For users authenticated but missing promo code) -->
+        <button type="button" class="btn-login" id="completeRegistrationBtn" style="display: none; background: var(--success); color: white;" disabled>
+          <i class="fas fa-check-circle"></i> Complete Registration
+        </button>
       </form>
 
       <div class="card-foot">
@@ -66,17 +71,41 @@
   <!-- Include Supabase Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
-  <script src="js/auth.js"></script>
-
   <script src="js/security.js"></script>
+  <script src="js/auth.js"></script>
   <script>
     const promoInp = document.getElementById('promo-code');
     const checkBtn = document.getElementById('checkCodeBtn');
     const msgSpan = document.getElementById('promo-msg');
     const dftBtn = document.getElementById('useDefaultCodeBtn');
     const googleBtn = document.getElementById('googleSignupBtn');
+    const completeBtn = document.getElementById('completeRegistrationBtn');
 
     let isValid = false;
+    let isCompleting = false;
+
+    // Session Check on Load
+    (async function () {
+      const session = await checkSession();
+      if (session) {
+        const { data: dbUser } = await window.supabaseClient
+          .from('users')
+          .select('promo_code_used')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (dbUser && dbUser.promo_code_used) {
+          // Already have an account and promo code
+          window.location.href = 'login.html';
+        } else {
+          // Logged in but missing promo code
+          isCompleting = true;
+          googleBtn.style.display = 'none';
+          completeBtn.style.display = 'flex';
+          completeBtn.disabled = true; // wait for valid code
+        }
+      }
+    })();
 
     // 1. Auto-apply URL Code & Ref
     const urlParams = new URLSearchParams(window.location.search);
@@ -109,12 +138,14 @@
         msgSpan.className = 'promo-msg success';
         msgSpan.textContent = '✓ Promo code is valid!';
         googleBtn.disabled = false;
+        completeBtn.disabled = false;
         promoInp.value = code.toUpperCase();
       } else {
         isValid = false;
         msgSpan.className = 'promo-msg error';
         msgSpan.textContent = '✗ Invalid promo code';
         googleBtn.disabled = true;
+        completeBtn.disabled = true;
       }
     }
 
@@ -128,16 +159,50 @@
 
     // 4. Google Signup Click
     googleBtn.addEventListener('click', async () => {
-      if (!isValid) return alert('Please enter a valid promo code first!');
+      if (!isValid) return window.showToast('Please enter a valid promo code first!', 'warning');
       // Save promo code in local storage as a backup for session-based referral
       localStorage.setItem('referral_promo', promoInp.value);
       await signInWithGoogle(promoInp.value);
+    });
+
+    // 5. Complete Registration Click (If already OAuth logged in)
+    completeBtn.addEventListener('click', async () => {
+      if (!isValid) return window.showToast('Please enter a valid promo code first!', 'warning');
+      const session = await checkSession();
+      if(!session) return;
+      
+      const refId = localStorage.getItem('referral_id');
+      const updates = {
+          promo_code_used: promoInp.value,
+          status: 'Registered'
+      };
+      if (refId) updates.referred_by = refId;
+      
+      const { error } = await window.supabaseClient.from('users').update(updates).eq('id', session.user.id);
+      
+      if(error) {
+          window.showToast('Error completing setup: ' + error.message, 'error');
+      } else {
+          if (refId) {
+              // Award referral points
+              const { data: refUser } = await window.supabaseClient.from('users').select('id, referral_points').eq('display_id', refId).single();
+              if (refUser) {
+                  await window.supabaseClient.from('users').update({
+                      referral_points: (refUser.referral_points || 0) + 10
+                  }).eq('id', refUser.id);
+              }
+              // Clear referral logic so it doesn't trigger again
+              localStorage.removeItem('referral_id');
+          }
+          window.location.href = 'dashboard.html';
+      }
     });
 
     // Handle Input Event to reset validation status
     promoInp.addEventListener('input', () => {
       isValid = false;
       googleBtn.disabled = true;
+      completeBtn.disabled = true;
       msgSpan.className = 'promo-msg';
       msgSpan.textContent = 'Click Check to verify code';
     });

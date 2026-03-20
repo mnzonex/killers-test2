@@ -17,6 +17,13 @@
 </head>
 
 <body>
+  <!-- Premium Preloader -->
+  <div id="preloader">
+    <img src="assets/logo.jpg" class="loader-logo" alt="Loading...">
+    <div class="loader-bar">
+      <div class="loader-progress"></div>
+    </div>
+  </div>
 
   <!-- HEADER -->
   <header id="site-header">
@@ -157,8 +164,8 @@
               class="fab fa-facebook-f"></i></a>
           <a href="https://www.tiktok.com/@dila_vip14?_r=1&_t=ZS-94NkXUPGFsq" class="ft-soc"><i
               class="fab fa-tiktok"></i></a>
-          <a href="#" class="ft-soc"><i class="fab fa-telegram-plane"></i></a>
-          <a href="#" class="ft-soc"><i class="fab fa-whatsapp"></i></a>
+          <a href="https://t.me/+Vuazn_wFHqpkYjFl" class="ft-soc"><i class="fab fa-telegram-plane"></i></a>
+          <a href="https://wa.me/94729190799" class="ft-soc"><i class="fab fa-whatsapp"></i></a>
         </div>
       </div>
       <div class="ft-col">
@@ -187,26 +194,28 @@
   <script src="js/killers.js"></script>
 
   <script>
-    async function checkAccess() {
-      const session = await checkSession();
-      if (!session) {
-        window.location.href = 'login.html';
-        return;
+    async function loadDynamicPrices() {
+      let promoCode = localStorage.getItem('referral_promo') || 'KILLERS10';
+      
+      try {
+        const session = await checkSession();
+        if (session) {
+          const { data: userData } = await window.supabaseClient
+            .from('users')
+            .select('promo_code_used')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (userData && userData.promo_code_used) {
+              promoCode = userData.promo_code_used;
+          }
+        }
+      } catch (e) {
+          console.error("Session check error", e);
       }
 
-      const { user } = session;
-
-      // Fetch user's promo code
-      const { data: userData, error: userError } = await window.supabaseClient
-        .from('users')
-        .select('promo_code_used')
-        .eq('id', user.id)
-        .single();
-
-      let promoCode = userData?.promo_code_used || 'KILLERS10';
-
       // Fetch promo details
-      const { data: promoData, error: promoError } = await window.supabaseClient
+      const { data: promoData } = await window.supabaseClient
         .from('promo_codes')
         .select('*')
         .eq('code', promoCode)
@@ -226,7 +235,7 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', checkAccess);
+    document.addEventListener('DOMContentLoaded', loadDynamicPrices);
   </script>
 </body>
 
