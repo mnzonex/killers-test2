@@ -3,7 +3,7 @@ async function signInWithGoogle(promoCodeUsed = null) {
         const { data, error } = await window.supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin + '/killers-test2/dashboard.html',
+                redirectTo: window.location.origin + '/dashboard.html',
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
@@ -52,4 +52,3 @@ async function checkSession() {
 window.signInWithGoogle = signInWithGoogle;
 window.signOut = signOut;
 window.checkSession = checkSession;
-

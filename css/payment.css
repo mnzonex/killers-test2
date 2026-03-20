@@ -262,9 +262,48 @@ body.payment-body {
     cursor: not-allowed;
     width: 100%;
 }
-
 @media (max-width: 900px) {
     .payment-main {
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Toast Notifications ── */
+#toast-container {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  background: var(--card);
+  color: var(--text);
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transform: translateX(120%);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  min-width: 280px;
+  font-family: 'Outfit', sans-serif;
+  backdrop-filter: blur(10px);
+}
+
+.toast.show {
+  transform: translateX(0);
+}
+
+.toast-error { border-left: 4px solid #ef4444; }
+.toast-success { border-left: 4px solid var(--success); }
+.toast-info { border-left: 4px solid var(--primary); }
+.toast i { font-size: 1.2rem; }
+.toast-error i { color: #ef4444; }
+.toast-success i { color: var(--success); }
+.toast-info i { color: var(--primary); }

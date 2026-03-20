@@ -148,6 +148,15 @@
             a.classList.remove('is-active');
         }
     });
+    
+    /* ── Hide Preloader ── */
+    window.addEventListener('load', () => {
+        const preloader = document.getElementById('preloader');
+        if (preloader) {
+            preloader.classList.add('loaded');
+            setTimeout(() => preloader.style.display = 'none', 1000);
+        }
+    });
 
     /* ── Session Redirect Utils ── */
     window.handleStartBtn = function () {

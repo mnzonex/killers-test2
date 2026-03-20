@@ -24,6 +24,11 @@ async function initDashboard() {
         console.error('Error fetching user:', userError);
         if (window.showToast) window.showToast('Failed to load profile details.', 'error');
     } else {
+        // Enforce registration if no promo code
+        if (!dbUser || !dbUser.promo_code_used) {
+            window.location.href = 'register.html';
+            return;
+        }
         currentUser = dbUser;
         updateHeaderUI(user, dbUser);
         generateReferralLink(dbUser);
@@ -125,50 +130,53 @@ function updateUI() {
     const badge = document.getElementById('status-badge');
     badge.textContent = status;
     badge.className = 'badge ' + status.toLowerCase();
+    
+    // 🚩 HANDLE BANNED USERS
+    if (status === 'Banned') {
+        if (window.showToast) window.showToast('Your account is banned. Contact support.', 'error');
+        setTimeout(() => window.signOut(), 3000);
+        return;
+    }
+
+    document.getElementById('active-plan-name').textContent = currentUser.active_package || 'None';
 
     // Reset visibility
     document.getElementById('package-section').classList.add('hidden');
-    document.getElementById('payment-section').classList.add('hidden');
     document.getElementById('active-section').classList.add('hidden');
 
-    if (status === 'Registered') {
-        document.getElementById('package-section').classList.remove('hidden');
-    } else if (status === 'Pending') {
-        const statusSec = document.querySelector('.status-section');
-        if (!document.querySelector('.waiting-msg')) {
-            statusSec.innerHTML += `
-                <div class="waiting-msg">
-                    <i class="fas fa-clock"></i>
-                    <div>
-                        <h4>Activation Pending</h4>
-                        <p>We are verifying your receipt for <strong>${currentUser.active_package}</strong>.</p>
-                    </div>
-                </div>`;
+    const statusActionBox = document.getElementById('status-action-box');
+    if (statusActionBox) {
+        statusActionBox.innerHTML = '';
+        if (status === 'Registered') {
+            statusActionBox.innerHTML = `<div class="status-msg"><p>Ready to upgrade? Choose a plan to access VIP signals.</p><a href="plans.html" class="btn-upgrade">Go to Plans</a></div>`;
+            document.getElementById('package-section').classList.remove('hidden');
+        } else if (status === 'Pending') {
+            statusActionBox.innerHTML = `<div class="waiting-msg"><i class="fas fa-clock"></i><div><h4>Activation Pending</h4><p>We are verifying payment for <strong>${currentUser.active_package}</strong>.</p></div></div>`;
+        } else if (status === 'Active') {
+            document.getElementById('active-section').classList.remove('hidden');
+            document.getElementById('expiry-txt').textContent = currentUser.expiry_date ? new Date(currentUser.expiry_date).toLocaleDateString() : 'Lifetime';
         }
-    } else if (status === 'Active') {
-        document.getElementById('active-section').classList.remove('hidden');
-        if (currentUser.expiry_date) {
-            document.getElementById('expiry-txt').textContent = new Date(currentUser.expiry_date).toLocaleDateString();
+    }
+
+    const accessBtns = document.querySelectorAll('.btn-access');
+    accessBtns.forEach(btn => {
+        if (status !== 'Active') {
+            btn.classList.add('disabled-link');
+            btn.onclick = (e) => { e.preventDefault(); window.showToast('Please activate your VIP membership.', 'warning'); };
+        } else {
+            btn.classList.remove('disabled-link');
+            btn.onclick = null;
         }
+    });
+
+    if (status === 'Active' && statusActionBox) {
+         statusActionBox.innerHTML = `<div class="active-quick-links"><p>Quick Access:</p><div class="quick-btns"><a href="https://t.me/your_crypto_link" class="btn-quick" target="_blank"><i class="fab fa-telegram"></i> Telegram</a></div></div>`;
     }
 }
 
 function selectPkg(name, defaultPrice) {
-    selectedPkgName = name;
-
-    if (currentPromo) {
-        if (name === 'Crypto VIP') selectedPkgPrice = currentPromo.crypto_price;
-        else if (name === 'Forex VIP') selectedPkgPrice = currentPromo.forex_price;
-        else if (name === 'All-in-One VIP') selectedPkgPrice = currentPromo.all_price;
-    } else {
-        selectedPkgPrice = defaultPrice;
-    }
-
-    document.getElementById('package-section').classList.add('hidden');
-    document.getElementById('payment-section').classList.remove('hidden');
-
-    document.getElementById('manager-name').textContent = currentPromo?.owner_name || 'Admin';
-    document.getElementById('bank-details-box').innerHTML = `<pre>${currentPromo?.bank_details || 'Contact support'}</pre>`;
+    // Redirect to dedicated payment page with package type
+    window.location.href = `payment.html?pkg=${encodeURIComponent(name)}`;
 }
 
 async function handlePaidClick() {
@@ -212,8 +220,39 @@ function copyRefLink() {
     });
 }
 
+function openProfileModal() {
+    document.getElementById('edit-name-input').value = currentUser?.name || '';
+    document.getElementById('profileModal').classList.add('active');
+}
+
+function closeProfileModal() {
+    document.getElementById('profileModal').classList.remove('active');
+}
+
+async function updateProfileName() {
+    const newName = document.getElementById('edit-name-input').value.trim();
+    if (!newName) return;
+
+    const { error } = await window.supabaseClient
+        .from('users')
+        .update({ name: newName })
+        .eq('id', currentUser.id);
+
+    if (error) {
+        if (window.showToast) window.showToast(error.message, 'error');
+    } else {
+        currentUser.name = newName;
+        document.getElementById('user-name').textContent = newName;
+        closeProfileModal();
+        if (window.showToast) window.showToast('Profile updated!', 'success');
+    }
+}
+
 window.copyId = copyId;
 window.copyRefLink = copyRefLink;
 window.selectPkg = selectPkg;
 window.handlePaidClick = handlePaidClick;
+window.openProfileModal = openProfileModal;
+window.closeProfileModal = closeProfileModal;
+window.updateProfileName = updateProfileName;
 document.addEventListener('DOMContentLoaded', initDashboard);
