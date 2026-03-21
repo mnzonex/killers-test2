@@ -35,13 +35,7 @@
 </head>
 
 <body>
-  <!-- Premium Preloader -->
-  <div id="preloader">
-    <img src="assets/logo.jpg" class="loader-logo" alt="Loading...">
-    <div class="loader-bar">
-      <div class="loader-progress"></div>
-    </div>
-  </div>
+
 
   <!-- ═══════════ HEADER ═══════════ -->
   <header id="site-header">
@@ -95,7 +89,7 @@
         </div>
       </div>
       <div class="hero-btns">
-        <a href="javascript:void(0)" class="btn btn-primary" onclick="handleStartBtn()"><i class="fas fa-crown"></i> Get
+        <a href="plans.html" class="btn btn-primary"><i class="fas fa-crown"></i> Get
           Started Now</a>
         <a href="support-contact.html" class="btn btn-ghost" id="hero-contact-btn"><i class="fas fa-headset"></i>
           Contact Us</a>
@@ -120,13 +114,13 @@
           <div class="srv-icon"><i class="fab fa-bitcoin"></i></div>
           <h3>Crypto Signals</h3>
           <p>Daily BTC, ETH &amp; altcoin signals with 95–98% accuracy. Profit target alerts included.</p>
-          <a href="plan-crypto.html" class="srv-link">View Details <i class="fas fa-arrow-right"></i></a>
+          <a href="plans.html" class="srv-link">View Details <i class="fas fa-arrow-right"></i></a>
         </div>
         <div class="srv-card">
           <div class="srv-icon"><i class="fas fa-chart-line"></i></div>
           <h3>Forex Signals</h3>
           <p>GOLD, BTC &amp; forex pairs with full technical and fundamental market analysis daily.</p>
-          <a href="plan-forex.html" class="srv-link">View Details <i class="fas fa-arrow-right"></i></a>
+          <a href="plans.html" class="srv-link">View Details <i class="fas fa-arrow-right"></i></a>
         </div>
         <div class="srv-card">
           <div class="srv-icon"><i class="fas fa-shield-alt"></i></div>
@@ -138,7 +132,7 @@
           <div class="srv-icon"><i class="fas fa-infinity"></i></div>
           <h3>All in One Plans</h3>
           <p>Pay once, profit forever. Unlimited lifetime VIP access with 24/7 best support.</p>
-          <a href="plans.html" class="srv-link">Get Plan <i class="fas fa-arrow-right"></i></a>
+          <a href="plans.html" class="srv-link">View Details <i class="fas fa-arrow-right"></i></a>
         </div>
       </div>
     </div>
@@ -159,6 +153,7 @@
           <li><i class="fas fa-check-circle"></i> Free signals available — zero risk to start</li>
         </ul>
         <a href="plans.html" class="btn btn-primary"><i class="fas fa-rocket"></i> Get Started Now</a>
+
       </div>
       <div class="why-right">
         <div class="why-stat-grid">
@@ -223,20 +218,12 @@
     (async function () {
       const session = await checkSession();
       if (session) {
-        // Update Plans link
-        const plansLinks = document.querySelectorAll('a[href="plans.html"]');
-        plansLinks.forEach(link => link.href = 'dashboard.html');
-
         // Update Login link to Dashboard
         const authLink = document.getElementById('nav-auth-link');
         if (authLink) {
           authLink.href = 'dashboard.html';
           authLink.innerHTML = '<i class="fas fa-user"></i> Dashboard';
         }
-
-        // Update hero buttons
-        const heroBtns = document.querySelectorAll('.hero-btns .btn-primary');
-        heroBtns.forEach(btn => btn.href = 'dashboard.html');
       }
     })();
   </script>

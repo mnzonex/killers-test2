@@ -54,16 +54,65 @@
   <script src="js/security.js"></script>
   <script>
     const googleBtn = document.getElementById('googleLoginBtn');
+    
+    // Check if there's a redirect URL from a protected page
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectUrl = urlParams.get('redirect');
+    if (redirectUrl) {
+      localStorage.setItem('login_redirect', redirectUrl);
+    }
+
     googleBtn.addEventListener('click', async () => {
-      await signInWithGoogle();
+      // Login always redirects back to login.html so we can check registration status
+      try {
+        const { data, error } = await window.supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin + '/login.html',
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            }
+          }
+        });
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error signing in:', error.message);
+        alert('Login Failed: ' + error.message);
+      }
     });
 
-    // Handle Redirect after login
-    // Supabase will handle the redirect, but we check if already logged in
+    // Handle session check on page load (including after OAuth redirect)
     (async function () {
       const session = await checkSession();
       if (session) {
-        window.location.href = 'index.html';
+        // User has a Google session — now check if they're properly registered
+        try {
+          const { data: dbUser } = await window.supabaseClient
+            .from('users')
+            .select('promo_code_used')
+            .eq('id', session.user.id)
+            .single();
+
+          if (dbUser && dbUser.promo_code_used) {
+            // ✅ Fully registered user — proceed to redirect or dashboard
+            const savedRedirect = localStorage.getItem('login_redirect');
+            if (savedRedirect) {
+              localStorage.removeItem('login_redirect');
+              window.location.href = savedRedirect;
+            } else {
+              window.location.href = 'dashboard.html';
+            }
+          } else {
+            // ❌ User has Google account but NOT registered with promo code
+            // Redirect to register page to complete registration
+            window.location.href = 'register.html';
+          }
+        } catch (e) {
+          console.error('Error checking registration:', e);
+          // If DB check fails, redirect to register as safety measure
+          window.location.href = 'register.html';
+        }
       }
     })();
   </script>

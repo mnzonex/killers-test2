@@ -114,35 +114,48 @@
 
   <script src="js/killers.js"></script>
   <script>
-    async function loadDynamicPrices() {
-      let promoCode = localStorage.getItem('referral_promo') || 'KILLERS10';
-      
-      try {
-        const session = await checkSession();
-        if (session) {
-          const { data: userData } = await window.supabaseClient
-            .from('users')
-            .select('promo_code_used')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (userData && userData.promo_code_used) {
-              promoCode = userData.promo_code_used;
-          }
-        }
-      } catch (e) {
-          console.error("Session check error", e);
+    async function initPage() {
+      const session = await checkSession();
+      if (!session) {
+        window.location.href = 'login.html?redirect=plan-crypto.html';
+        return;
       }
 
-      const { data: promoData } = await window.supabaseClient
-        .from('promo_codes').select('*').eq('code', promoCode).single();
+      // Update nav
+      const authLink = document.querySelector('a[href="login.html"]');
+      if (authLink) {
+        authLink.href = 'dashboard.html';
+        authLink.innerHTML = '<i class="fas fa-user"></i> Dashboard';
+      }
+
+      let promoCode = 'KILLERS10';
+      try {
+        const { data: userData } = await window.supabaseClient
+          .from('users').select('promo_code_used').eq('id', session.user.id).single();
+        if (userData && userData.promo_code_used) promoCode = userData.promo_code_used;
+      } catch (e) { console.error(e); }
+
+      let promoData = null;
+      try {
+        const { data } = await window.supabaseClient
+          .from('promo_codes').select('*').eq('code', promoCode).single();
+        promoData = data;
+      } catch (e) { console.error(e); }
+
+      if (!promoData) {
+        try {
+          const { data } = await window.supabaseClient
+            .from('promo_codes').select('*').eq('code', 'KILLERS10').single();
+          promoData = data;
+        } catch (e) { console.error(e); }
+      }
 
       if (promoData) {
         const priceEl = document.querySelector('.price-num');
         if (priceEl) priceEl.textContent = promoData.crypto_price;
       }
     }
-    document.addEventListener('DOMContentLoaded', loadDynamicPrices);
+    document.addEventListener('DOMContentLoaded', initPage);
   </script>
 </body>
 

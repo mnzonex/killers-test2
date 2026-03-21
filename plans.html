@@ -17,13 +17,7 @@
 </head>
 
 <body>
-  <!-- Premium Preloader -->
-  <div id="preloader">
-    <img src="assets/logo.jpg" class="loader-logo" alt="Loading...">
-    <div class="loader-bar">
-      <div class="loader-progress"></div>
-    </div>
-  </div>
+
 
   <!-- HEADER -->
   <header id="site-header">
@@ -194,35 +188,68 @@
   <script src="js/killers.js"></script>
 
   <script>
-    async function loadDynamicPrices() {
-      let promoCode = localStorage.getItem('referral_promo') || 'KILLERS10';
-      
-      try {
-        const session = await checkSession();
-        if (session) {
-          const { data: userData } = await window.supabaseClient
-            .from('users')
-            .select('promo_code_used')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (userData && userData.promo_code_used) {
-              promoCode = userData.promo_code_used;
-          }
-        }
-      } catch (e) {
-          console.error("Session check error", e);
+    // ═══════════ AUTH GATE & DYNAMIC PRICING ═══════════
+    async function initPlansPage() {
+      // 1. Check if user is logged in
+      const session = await checkSession();
+      if (!session) {
+        // Not logged in — redirect to login page with return URL
+        window.location.href = 'login.html?redirect=plans.html';
+        return;
       }
 
-      // Fetch promo details
-      const { data: promoData } = await window.supabaseClient
-        .from('promo_codes')
-        .select('*')
-        .eq('code', promoCode)
-        .single();
+      // 2. Update nav for logged-in user
+      const authLink = document.querySelector('a[href="login.html"]');
+      if (authLink) {
+        authLink.href = 'dashboard.html';
+        authLink.innerHTML = '<i class="fas fa-user"></i> Dashboard';
+      }
+
+      // 3. Get user's promo code from DB
+      let promoCode = 'KILLERS10'; // default
+      try {
+        const { data: userData } = await window.supabaseClient
+          .from('users')
+          .select('promo_code_used')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (userData && userData.promo_code_used) {
+          promoCode = userData.promo_code_used;
+        }
+      } catch (e) {
+        console.error("Error fetching user promo code:", e);
+      }
+
+      // 4. Fetch promo code details (prices + bank details)
+      let promoData = null;
+      try {
+        const { data } = await window.supabaseClient
+          .from('promo_codes')
+          .select('*')
+          .eq('code', promoCode)
+          .single();
+        promoData = data;
+      } catch (e) {
+        console.error("Error fetching promo data:", e);
+      }
+
+      // Fallback to default promo if needed
+      if (!promoData) {
+        try {
+          const { data } = await window.supabaseClient
+            .from('promo_codes')
+            .select('*')
+            .eq('code', 'KILLERS10')
+            .single();
+          promoData = data;
+        } catch (e) {
+          console.error("Error fetching default promo:", e);
+        }
+      }
 
       if (promoData) {
-        // Update prices in the UI
+        // 5. Update prices in the UI
         document.querySelectorAll('.pc').forEach(card => {
           const title = card.querySelector('h2').textContent.trim();
           const amtEl = card.querySelector('.amt');
@@ -233,9 +260,12 @@
           if (title === 'All-in-One VIP') amtEl.textContent = promoData.all_price;
         });
       }
+
+      // 6. Show the page content (remove loading state)
+      document.body.classList.add('plans-loaded');
     }
 
-    document.addEventListener('DOMContentLoaded', loadDynamicPrices);
+    document.addEventListener('DOMContentLoaded', initPlansPage);
   </script>
 </body>
 
