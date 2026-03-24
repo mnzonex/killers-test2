@@ -200,7 +200,7 @@
               // Clear referral logic so it doesn't trigger again
               localStorage.removeItem('referral_id');
           }
-          const nextPage = localStorage.getItem('login_redirect') || 'dashboard.html';
+          const nextPage = localStorage.getItem('login_redirect') || './dashboard.html';
           localStorage.removeItem('login_redirect');
           window.location.href = nextPage;
       }
