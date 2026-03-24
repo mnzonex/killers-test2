@@ -212,7 +212,7 @@
                 const msg = `Hi, I just paid for ${pkgType}. My ID: ${currentUser.display_id}. Please activate my account.`;
                 const wa = currentPromo.whatsapp_number.replace(/\D/g, '');
                 window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
-                window.location.href = 'dashboard.html';
+                window.location.href = './dashboard.html';
             };
         }
 
