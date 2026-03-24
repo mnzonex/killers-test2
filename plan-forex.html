@@ -118,14 +118,14 @@
     async function initPage() {
       const session = await checkSession();
       if (!session) {
-        window.location.href = 'login.html?redirect=plan-forex.html';
+        window.location.href = './login.html?redirect=plan-forex.html';
         return;
       }
 
       // Update nav
-      const authLink = document.querySelector('a[href="login.html"]');
+      const authLink = document.querySelector('a[href="./login.html"]');
       if (authLink) {
-        authLink.href = 'dashboard.html';
+        authLink.href = './dashboard.html';
         authLink.innerHTML = '<i class="fas fa-user"></i> Dashboard';
       }
 
