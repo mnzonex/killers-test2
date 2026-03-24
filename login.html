@@ -1,121 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | KILLERS VIP</title>
-  <meta name="description" content="Login to your KILLERS VIP account and access your premium trading signals.">
-  <link rel="icon" href="images/apple.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="css/login.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
 </head>
-
 <body>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-
-  <div class="login-page">
-    <div class="login-card">
-      <a href="index.html" class="card-logo">
-        <img src="assets/logo.jpg" alt="Killers VIP" onerror="this.style.display='none'">
-        <span>KILLERS <em>VIP</em></span>
-      </a>
-
-      <div class="card-head">
-        <h1>Welcome Back</h1>
-        <p>Login to your VIP dashboard</p>
-      </div>
-
-      <div class="login-form">
-        <!-- Google Login Button -->
-        <button type="button" class="btn-login google-btn" id="googleLoginBtn">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Icon" width="18">
-          Login with Google
-        </button>
-      </div>
-
-      <div class="card-foot">
-        <p>Don't have an account? <a href="register.html">Sign up here</a></p>
-        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Include Supabase Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-config.js"></script>
-  <script src="js/auth.js"></script>
-
-  <script src="js/security.js"></script>
-  <script>
-    const googleBtn = document.getElementById('googleLoginBtn');
-    
-    // Check if there's a redirect URL from a protected page
-    const urlParams = new URLSearchParams(window.location.search);
-    const redirectUrl = urlParams.get('redirect');
-    if (redirectUrl) {
-      localStorage.setItem('login_redirect', redirectUrl);
-    }
-
-    googleBtn.addEventListener('click', async () => {
-      // Login always redirects back to login.html so we can check registration status
-      try {
-        const { data, error } = await window.supabaseClient.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: window.location.origin + '/login.html',
-            queryParams: {
-              access_type: 'offline',
-              prompt: 'consent',
-            }
-          }
-        });
-        if (error) throw error;
-      } catch (error) {
-        console.error('Error signing in:', error.message);
-        alert('Login Failed: ' + error.message);
-      }
-    });
-
-    // Handle session check on page load (including after OAuth redirect)
-    (async function () {
-      const session = await checkSession();
-      if (session) {
-        // User has a Google session — now check if they're properly registered
-        try {
-          const { data: dbUser } = await window.supabaseClient
-            .from('users')
-            .select('promo_code_used')
-            .eq('id', session.user.id)
-            .single();
-
-          if (dbUser && dbUser.promo_code_used) {
-            // ✅ Fully registered user — proceed to redirect or dashboard
-            const savedRedirect = localStorage.getItem('login_redirect');
-            if (savedRedirect) {
-              localStorage.removeItem('login_redirect');
-              window.location.href = savedRedirect;
-            } else {
-              window.location.href = 'dashboard.html';
-            }
-          } else {
-            // ❌ User has Google account but NOT registered with promo code
-            // Redirect to register page to complete registration
-            window.location.href = 'register.html';
-          }
-        } catch (e) {
-          console.error('Error checking registration:', e);
-          // If DB check fails, redirect to register as safety measure
-          window.location.href = 'register.html';
-        }
-      }
-    })();
-  </script>
+    <h1>Login Page</h1>
+    <form action="/dashboard.html" method="post">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
+    <a href="/register.html">Register</a>
 </body>
-
 </html>
