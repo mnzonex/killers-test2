@@ -68,7 +68,7 @@
         const { data, error } = await window.supabaseClient.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: window.location.origin + '/login.html',
+            redirectTo: window.location.origin + '/killers-test2/login.html',
             queryParams: {
               access_type: 'offline',
               prompt: 'consent',
@@ -101,17 +101,17 @@
               localStorage.removeItem('login_redirect');
               window.location.href = savedRedirect;
             } else {
-              window.location.href = 'dashboard.html';
+              window.location.href = '/killers-test2/dashboard.html';
             }
           } else {
             // ❌ User has Google account but NOT registered with promo code
             // Redirect to register page to complete registration
-            window.location.href = 'register.html';
+            window.location.href = '/killers-test2/register.html';
           }
         } catch (e) {
           console.error('Error checking registration:', e);
           // If DB check fails, redirect to register as safety measure
-          window.location.href = 'register.html';
+          window.location.href = '/killers-test2/register.html';
         }
       }
     })();
