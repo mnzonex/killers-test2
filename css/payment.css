@@ -1,12 +1,12 @@
 :root {
-    --bg: #0f172a;
-    --card: #1e293b;
-    --primary: #3b82f6;
+    --bg: #060609;
+    --card: rgba(255, 255, 255, 0.04);
+    --primary: #f7931a;
     --success: #10b981;
-    --text: #f8fafc;
-    --muted: #94a3b8;
-    --border: #334155;
-    --orange: #f59e0b;
+    --text: #ffffff;
+    --muted: #9898b0;
+    --border: rgba(247, 147, 26, 0.18);
+    --orange: #f7931a;
 }
 
 body.payment-body {
@@ -66,6 +66,8 @@ body.payment-body {
 
 .payment-card {
     background: var(--card);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border-radius: 24px;
     border: 1px solid var(--border);
     padding: 3rem;
@@ -113,6 +115,7 @@ body.payment-body {
     border-radius: 16px;
     padding: 1.5rem;
     margin-bottom: 2rem;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
 .info-item {
@@ -211,6 +214,8 @@ body.payment-body {
 
 .support-card {
     background: var(--card);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border-radius: 20px;
     padding: 2rem;
     border: 1px solid var(--border);
@@ -237,7 +242,9 @@ body.payment-body {
 }
 
 .locked-links-card {
-    background: rgba(0,0,0,0.2);
+    background: var(--card);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border-radius: 20px;
     padding: 2rem;
     border: 1px solid var(--border);

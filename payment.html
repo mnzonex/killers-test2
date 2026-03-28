@@ -69,9 +69,9 @@
                 <div class="locked-links-card">
                     <h3><i class="fas fa-lock"></i> VIP Access Links</h3>
                     <p>These links will unlock automatically after your payment is verified.</p>
-                    <div class="locked-btns">
-                        <button class="btn-locked" disabled><i class="fab fa-telegram"></i> Join Crypto VIP</button>
-                        <button class="btn-locked" disabled><i class="fab fa-telegram"></i> Join Forex VIP</button>
+                    <div class="locked-btns" id="payment-links-container">
+                        <!-- Rendered by JS -->
+                        <button class="btn-locked" disabled><i class="fas fa-spinner fa-spin"></i> Loading Links...</button>
                     </div>
                 </div>
             </div>
@@ -87,6 +87,7 @@
         let currentUser = null;
         let currentPromo = null;
         let pkgType = '';
+        let groupLinks = [];
 
         async function initPayment() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -94,7 +95,7 @@
             
             const session = await checkSession();
             if (!session) {
-                window.location.href = 'login.html';
+                window.location.href = './login.html?redirect=login.html';
                 return;
             }
 
@@ -110,7 +111,38 @@
                 currentPromo = defaultPromo;
             }
 
+            // Fetch links
+            try {
+                const { data: configData } = await window.supabaseClient.from('admin_config').select('key_value').eq('key_name', 'group_links').single();
+                if (configData && configData.key_value) {
+                    groupLinks = JSON.parse(configData.key_value);
+                }
+            } catch (e) { console.warn('No links found'); }
+
             renderPayment();
+            renderLinks();
+        }
+
+        function renderLinks() {
+            const container = document.getElementById('payment-links-container');
+            if (!container) return;
+
+            const pkgLinks = groupLinks.filter(l => l.package === pkgType);
+            
+            if (pkgLinks.length === 0) {
+                container.innerHTML = '<span style="color:var(--text-muted); font-size:0.9rem;">No specific group links required.</span>';
+                return;
+            }
+
+            const isActive = (currentUser.status === 'Active' && currentUser.active_package === pkgType);
+
+            container.innerHTML = pkgLinks.map(l => {
+                if (isActive) {
+                    return `<a href="${l.url}" class="btn-locked" target="_blank" style="text-decoration:none; color:var(--primary); border-color:var(--primary); background:rgba(247,147,26,0.1);"><i class="fab fa-telegram"></i> ${l.name} (Unlocked)</a>`;
+                } else {
+                    return `<button class="btn-locked" disabled><i class="fas fa-lock"></i> ${l.name}</button>`;
+                }
+            }).join('');
         }
 
         function renderPayment() {

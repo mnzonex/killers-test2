@@ -98,10 +98,10 @@
           // Already fully registered — go to dashboard
           const savedRedirect = localStorage.getItem('login_redirect');
           if (savedRedirect) {
-            localStorage.removeItem('login_redirect');
-            window.location.href = savedRedirect;
+            sessionStorage.removeItem('redirectAfterLogin');
+            window.location.href = './' + savedRedirect;
           } else {
-            window.location.href = 'dashboard.html';
+            window.location.href = './dashboard.html';
           }
         } else {
           // Logged in but missing promo code — show complete registration form
@@ -200,9 +200,9 @@
               // Clear referral logic so it doesn't trigger again
               localStorage.removeItem('referral_id');
           }
-          const nextPage = localStorage.getItem('login_redirect') || './dashboard.html';
+          const nextPage = localStorage.getItem('login_redirect') || 'dashboard.html';
           localStorage.removeItem('login_redirect');
-          window.location.href = nextPage;
+          window.location.href = './' + nextPage;
       }
     });
 

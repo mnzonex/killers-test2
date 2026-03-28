@@ -3,11 +3,27 @@ let currentPromo = null;
 let selectedPkgName = null;
 let selectedPkgPrice = null;
 let promoSubscription = null;
+let userGroupLinks = [];
+
+async function fetchGroupLinks() {
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('admin_config')
+            .select('key_value')
+            .eq('key_name', 'group_links')
+            .single();
+        if (data && data.key_value) {
+            userGroupLinks = JSON.parse(data.key_value);
+        }
+    } catch (e) {
+        console.warn('Could not fetch group links', e);
+    }
+}
 
 async function initDashboard() {
     const session = await window.checkSession();
     if (!session) {
-        window.location.href = 'login.html';
+        window.location.href = './login.html';
         return;
     }
 
@@ -26,7 +42,7 @@ async function initDashboard() {
     } else {
         // Enforce registration if no promo code
         if (!dbUser || !dbUser.promo_code_used) {
-            window.location.href = 'register.html';
+            window.location.href = './register.html';
             return;
         }
         currentUser = dbUser;
@@ -34,8 +50,9 @@ async function initDashboard() {
         generateReferralLink(dbUser);
     }
 
-    // 2. Fetch Announcements
+    // 2. Fetch Announcements and Group Links
     fetchAnnouncements();
+    await fetchGroupLinks();
 
     // 3. Initial Promo Fetch
     const promoCode = currentUser?.promo_code_used || localStorage.getItem('referral_promo') || 'KILLERS10';
@@ -170,13 +187,42 @@ function updateUI() {
     });
 
     if (status === 'Active' && statusActionBox) {
-         statusActionBox.innerHTML = `<div class="active-quick-links"><p>Quick Access:</p><div class="quick-btns"><a href="https://t.me/your_crypto_link" class="btn-quick" target="_blank"><i class="fab fa-telegram"></i> Telegram</a></div></div>`;
+         statusActionBox.innerHTML = `<div class="active-quick-links"><p>Quick Access:</p><div class="quick-btns"><a href="#dynamic-links-container" class="btn-quick"><i class="fas fa-link"></i> View Links</a></div></div>`;
     }
+
+    renderUserLinks(status, currentUser?.active_package);
+}
+
+function renderUserLinks(status, activePkg) {
+    const container = document.getElementById('dynamic-links-container');
+    if (!container) return;
+
+    let allowedLinks = [];
+
+    // Free links are unconditionally provided
+    allowedLinks.push(...userGroupLinks.filter(l => l.package === 'Free'));
+
+    // Active package links provided if active
+    if (status === 'Active' && activePkg && activePkg !== 'Free') {
+        allowedLinks.push(...userGroupLinks.filter(l => l.package === activePkg));
+        // Note: As per request, All-in-one VIP might get their specific listed links.
+    }
+
+    if (allowedLinks.length === 0) {
+        container.innerHTML = '<span style="color:var(--text-muted)">No active group links found.</span>';
+        return;
+    }
+
+    container.innerHTML = allowedLinks.map(l => `
+        <a href="${l.url}" class="btn-access" target="_blank" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; justify-content:center; background:var(--bg-glass); border:1px solid var(--border-light); color:var(--text-light); padding:1rem; border-radius:0.5rem; transition:all 0.3s; font-weight:500;">
+            <i class="fab fa-telegram" style="color:#0088cc; font-size:1.2rem;"></i> ${l.name} <i class="fas fa-external-link-alt" style="font-size:0.8rem; margin-left:auto; opacity:0.5;"></i>
+        </a>
+    `).join('');
 }
 
 function selectPkg(name, defaultPrice) {
     // Redirect to dedicated payment page with package type
-    window.location.href = `payment.html?pkg=${encodeURIComponent(name)}`;
+    window.location.href = `./payment.html?pkg=${encodeURIComponent(name)}`;
 }
 
 async function handlePaidClick() {
