@@ -194,7 +194,7 @@
       const session = await checkSession();
       if (!session) {
         // Not logged in — redirect to login page
-        window.location.href = '/login.html?redirect=./plans.html';
+        window.location.href = './login.html?redirect=plans.html';
         return;
       }
 

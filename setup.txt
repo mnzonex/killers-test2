@@ -1,0 +1,70 @@
+# KILLERS VIP - COMPLETE SETUP GUIDE (සිංහල සහ English)
+
+මෙම වෙබ් අඩවිය සාර්ථකව ක්‍රියාත්මක කර ගැනීමට පහත පියවර අනුගමනය කරන්න.
+Follow these steps to set up your website successfully.
+
+---
+
+### STEP 1: Supabase Database Setup (පියවර 1: දත්ත ගබඩාව සැකසීම)
+
+1. **Create Account:** Go to [supabase.com](https://supabase.com) and create a new project.
+   (supabase.com වෙත ගොස් අලුත් Project එකක් අරඹන්න.)
+
+2. **Run SQL:** Copy all code from `database_schema.sql` and paste it into the "SQL Editor" in Supabase, then click "Run".
+   (`database_schema.sql` ගොනුවේ ඇති සියලුම කේතයන් පිටපත් කර Supabase හි SQL Editor එකට දමා Run කරන්න.)
+
+---
+
+### STEP 2: Configure API Keys (පියවර 2: API Keys සම්බන්ධ කිරීම)
+
+1. Find your **Project URL** and **Anon Key** in Supabase Settings -> API.
+   (Supabase Settings හි ඇති API කොටසින් ඔබේ Project URL සහ Anon Key එක සොයා ගන්න.)
+
+2. Open `js/supabase-config.js` AND `admin/js/supabase-config.js` and paste your URL and Key in BOTH.
+   (`js/supabase-config.js` සහ `admin/js/supabase-config.js` යන ගොනු දෙකම විවෘත කර ස්ථාන දෙකෙහිම ඔබේ URL සහ Key එක ඇතුළත් කරන්න.)
+
+---
+
+### STEP 3: Google Login Setup (පියවර 3: Google ලොගින් සැකසීම)
+
+1. In Supabase, go to **Authentication -> Providers** and enable **Google**.
+   (Supabase හි Authentication යටතේ ඇති Providers වෙත ගොස් Google "Enable" කරන්න.)
+
+2. Go to **Google Cloud Console**, create OAuth credentials, and paste the Client ID and Secret back into Supabase.
+   (Google Cloud Console වෙත ගොස් Client ID සහ Secret ලබාගෙන ඒවා Supabase වෙත ලබා දෙන්න.)
+
+3. Add these Redirect URLs in Google/Supabase:
+   - `https://killersvip.com`
+   - `https://killersvip.com/dashboard.html`
+
+---
+
+### STEP 4: Admin Access (පියවර 4: ඇඩ්මින් පාලනය)
+
+1. Default Admin Credentials (මූලික ඇඩ්මින් විස්තර):
+   - **Admin ID:** KILLERS-ADMIN
+   - **Secret Key:** ADMIN-SECRET-7788
+
+2. Access the Admin Panel at: `your-url.com/admin/index.html`
+   (ඇඩ්මින් පැනලය සඳහා `your-url.com/admin/index.html` වෙත පිවිසෙන්න.)
+
+---
+
+### STEP 5: Promo Codes & Prices (පියවර 5: ප්‍රොමෝ කෝඩ් සහ මිල ගණන්)
+
+1. Go to the Admin Dashboard and add your Promo Codes.
+   (ඇඩ්මින් පැනලය හරහා ඔබේ ප්‍රොමෝ කෝඩ් ඇතුළත් කරන්න.)
+
+2. For each Promo Code, set the **Prices** and **Bank Details**.
+   (සෑම ප්‍රොමෝ කෝඩ් එකකටම අදාළ මිල ගණන් සහ බැංකු ගිණුම් විස්තර එතැනදීම සැකසිය හැක.)
+
+---
+
+### IMPORTANT NOTES (වැදගත්):
+- **Verification:** Users must be logged in to see Prices.
+  (මිල ගණන් බැලීමට පරිශීලකයින් අනිවාර්යයෙන්ම Log විය යුතුය.)
+- **Privacy Policy:** Ensure your Privacy Policy and Terms pages are live.
+  (Privacy Policy සහ Terms පිටු සජීවීව පවතින බව තහවුරු කරගන්න.)
+
+Need Help? Contact: Dilavip299@gmail.com
+ගැටලුවක් ඇත්නම් Dilavip299@gmail.com හරහා විමසන්න.
